@@ -93,20 +93,23 @@ y_test = torch.tensor(y_test.values)
 y_valid = torch.tensor(y_valid.values)
 
 Sample_num = x_train.shape[1]
-Class_num = 2
-Hiddenl = 10
+Class_num = 3
+Hiddenl = 7
+h1 =5
 
 
 "Model"
 model = nn.Sequential(nn.Linear(Sample_num, Hiddenl),
                       nn.ReLU(),
-                      nn.Linear(Hiddenl, Class_num),
+                      nn.Linear(Hiddenl, h1),
+                      nn.ReLU(),
+                      nn.Linear(h1, Class_num),
                       nn.Sigmoid())
 "Loss"
-loss = nn.MSELoss()
+loss = nn.CrossEntropyLoss()
 
 "Optimizer"
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 
 "Train"
@@ -115,23 +118,23 @@ num_sample_test = torch.tensor(x_test.shape[0])
 num_sample_valid = torch.tensor(x_valid.shape[0])
 epochs = 200
 
-for epoch in range (epochs):
+for epoch in range(epochs):
 
     optimizer.zero_grad()
     yp = model(x_train)
     loss_value = loss(yp, y_train)
 
-    yp_acc = torch.sum(torch.max(loss_value, 1)[1] == y_train)
-    acc_train = (yp_acc.item() / num_sample_train) * 100
+    yp_acc = torch.sum(torch.max(yp, 1)[1] == y_train)
+    acc_train = (yp_acc.float() / float(num_sample_train)) * 100
 
     loss_value.backward()
     optimizer.step()
 
     yp_valid = model(x_valid)
-    yp_valid_acc = torch.sum(torch.max(loss_value, 1)[1] == y_valid)
-    acc_valid = (yp_acc.item() / num_sample_train) * 100
+    yp_valid_acc = torch.sum(torch.max(yp_valid, 1)[1] == y_valid)
+    acc_valid = (yp_valid_acc.float() / float(num_sample_valid)) * 100
 
-    print('Epoch: ', epoch, 'loss: ', loss_value.item, 'Train acc: ', acc_train.item(), 'Valid acc: ', acc_valid.item())
+    print('Epoch: ', epoch, 'loss: ', loss_value.item(), 'Train acc: ', acc_train.item(), 'Valid acc: ', acc_valid.item())
 
 
 print("End!!!")
